@@ -1,0 +1,418 @@
+/* ============================================================
+   AI Blog Generator — admin styles
+   ALL rules are scoped under .ai-blog-plugin-wrap so nothing
+   bleeds into the global WordPress admin stylesheet.
+   ============================================================ */
+
+/* ── Reset / box model ──────────────────────────────────────── */
+.ai-blog-plugin-wrap,
+.ai-blog-plugin-wrap *,
+.ai-blog-plugin-wrap *::before,
+.ai-blog-plugin-wrap *::after {
+    box-sizing: border-box;
+}
+
+/* ── Outer wrapper ──────────────────────────────────────────── */
+.ai-blog-plugin-wrap {
+    max-width: 860px;
+    width: 100%;
+    padding: 0 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif;
+    color: #1e1e1e;
+}
+
+/* ── Form card ──────────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #ffffff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 24px;
+    margin-top: 16px;
+}
+
+/* ── Side-by-side row (tone + length) ───────────────────────── */
+.ai-blog-plugin-wrap .aibg-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.ai-blog-plugin-wrap .aibg-row .aibg-field {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+
+/* ── Individual field ───────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ── Label ──────────────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3c434a;
+}
+
+/* ── Text input ─────────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1e1e1e;
+    background: #f6f7f7;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ai-blog-plugin-wrap .aibg-input:focus {
+    background: #fff;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.ai-blog-plugin-wrap .aibg-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Select ─────────────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1e1e1e;
+    background: #f6f7f7;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: auto;
+}
+
+.ai-blog-plugin-wrap .aibg-select:focus {
+    background: #fff;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.ai-blog-plugin-wrap .aibg-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Submit button ──────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-btn {
+    align-self: flex-start;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    background: #2271b1;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    white-space: nowrap;
+}
+
+.ai-blog-plugin-wrap .aibg-btn:hover:not(:disabled) {
+    background: #135e96;
+}
+
+.ai-blog-plugin-wrap .aibg-btn:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.ai-blog-plugin-wrap .aibg-btn:disabled,
+.ai-blog-plugin-wrap .aibg-btn--loading {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* ── Error message ──────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-error {
+    margin: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #8a1f11;
+    background: #fcf0f1;
+    border-left: 4px solid #d63638;
+    border-radius: 0 4px 4px 0;
+}
+
+/* ── Preview card ───────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-preview {
+    margin-top: 20px;
+    background: #ffffff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 24px;
+}
+
+.ai-blog-plugin-wrap .aibg-preview__heading {
+    margin: 0 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #3c434a;
+    border-bottom: 1px solid #dcdcde;
+    padding-bottom: 10px;
+}
+
+.ai-blog-plugin-wrap .aibg-preview__content {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1e1e1e;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ── Skeleton loading state ─────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ai-blog-plugin-wrap .aibg-skeleton__line {
+    height: 14px;
+    background: linear-gradient(90deg, #e8e8e8 25%, #f4f4f4 50%, #e8e8e8 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: aibg-shimmer 1.4s infinite;
+    width: 85%;
+}
+
+.ai-blog-plugin-wrap .aibg-skeleton__line--wide {
+    width: 100%;
+}
+
+.ai-blog-plugin-wrap .aibg-skeleton__line--short {
+    width: 55%;
+}
+
+@keyframes aibg-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Publish action bar ─────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.ai-blog-plugin-wrap .aibg-actions__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Secondary (outlined) — Save as Draft */
+.ai-blog-plugin-wrap .aibg-btn--secondary {
+    color: #2271b1;
+    background: #fff;
+    border: 1px solid #2271b1;
+}
+
+.ai-blog-plugin-wrap .aibg-btn--secondary:hover:not(:disabled) {
+    background: #f0f6fc;
+    border-color: #135e96;
+    color: #135e96;
+}
+
+/* Green — Publish Now */
+.ai-blog-plugin-wrap .aibg-btn--publish {
+    background: #00a32a;
+}
+
+.ai-blog-plugin-wrap .aibg-btn--publish:hover:not(:disabled) {
+    background: #007017;
+}
+
+/* ── Success banner ─────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-success {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: #edfaef;
+    border-left: 4px solid #00a32a;
+    border-radius: 0 4px 4px 0;
+}
+
+.ai-blog-plugin-wrap .aibg-success__message {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a4d25;
+}
+
+.ai-blog-plugin-wrap .aibg-success__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.ai-blog-plugin-wrap .aibg-success__link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.ai-blog-plugin-wrap .aibg-success__link:hover {
+    color: #135e96;
+    text-decoration: underline;
+}
+
+/* ── Auto-Post Settings card ────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-settings {
+    margin-top: 28px;
+    background: #ffffff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 24px;
+}
+
+.ai-blog-plugin-wrap .aibg-settings__heading {
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.ai-blog-plugin-wrap .aibg-settings__description {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: #646970;
+    line-height: 1.5;
+}
+
+.ai-blog-plugin-wrap .aibg-form--settings {
+    margin-top: 0;
+    border: none;
+    padding: 0;
+    background: transparent;
+}
+
+/* ── Toggle switch ──────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__track {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 40px;
+    height: 22px;
+    background: #a7aaad;
+    border-radius: 11px;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__thumb {
+    position: absolute;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__checkbox:checked ~ .aibg-toggle__track {
+    background: #2271b1;
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__checkbox:checked ~ .aibg-toggle__track .aibg-toggle__thumb {
+    transform: translateX( 18px );
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__checkbox:focus-visible ~ .aibg-toggle__track {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__checkbox:disabled ~ .aibg-toggle__track {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ai-blog-plugin-wrap .aibg-toggle__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3c434a;
+}
+
+/* ── Next run notice ────────────────────────────────────────── */
+.ai-blog-plugin-wrap .aibg-settings__next-run {
+    margin: 0;
+    font-size: 12px;
+    color: #646970;
+}
+
+/* ── Inline success text (settings saved) ───────────────────── */
+.ai-blog-plugin-wrap .aibg-success-inline {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #007017;
+}
+
+/* ── Responsive tweaks ──────────────────────────────────────── */
+@media ( max-width: 600px ) {
+    .ai-blog-plugin-wrap .aibg-form {
+        padding: 16px;
+    }
+
+    .ai-blog-plugin-wrap .aibg-settings {
+        padding: 16px;
+    }
+
+    .ai-blog-plugin-wrap .aibg-btn {
+        width: 100%;
+        text-align: center;
+        align-self: stretch;
+    }
+
+    .ai-blog-plugin-wrap .aibg-actions__buttons {
+        flex-direction: column;
+    }
+
+    .ai-blog-plugin-wrap .aibg-success {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
