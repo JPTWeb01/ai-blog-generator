@@ -41,20 +41,25 @@ function ai_blog_generate_content( string $topic, string $tone, string $length )
 // ── Internal Helpers ──────────────────────────────────────────────────────────
 
 /**
- * Retrieve and validate the API key from wp-config.php.
+ * Retrieve the API key — constant in wp-config.php takes priority over the DB.
  *
  * @return string|WP_Error
  */
 function ai_blog_get_api_key(): string|WP_Error {
-    if ( ! defined( 'GEMINI_API_KEY' ) || '' === trim( GEMINI_API_KEY ) ) {
-        return new WP_Error(
-            'ai_blog_no_api_key',
-            __( 'Gemini API key is not configured. Add define(\'GEMINI_API_KEY\', \'your-key\') to wp-config.php.', 'ai-blog-generator' ),
-            [ 'status' => 500 ]
-        );
+    if ( defined( 'GEMINI_API_KEY' ) && '' !== trim( GEMINI_API_KEY ) ) {
+        return GEMINI_API_KEY;
     }
 
-    return GEMINI_API_KEY;
+    $db_key = (string) get_option( 'ai_blog_gemini_api_key', '' );
+    if ( '' !== $db_key ) {
+        return $db_key;
+    }
+
+    return new WP_Error(
+        'ai_blog_no_api_key',
+        __( 'Gemini API key is not configured. Add it in AI Blog → Settings or define GEMINI_API_KEY in wp-config.php.', 'ai-blog-generator' ),
+        [ 'status' => 500 ]
+    );
 }
 
 /**

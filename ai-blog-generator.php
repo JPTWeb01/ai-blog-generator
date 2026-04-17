@@ -3,7 +3,7 @@
  * Plugin Name:       AI Blog Generator
  * Plugin URI:        https://github.com/yourusername/ai-blog-generator
  * Description:       Generate and publish AI-powered blog posts using Google Gemini.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Your Name
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-define( 'AI_BLOG_VERSION',     '1.0.0' );
+define( 'AI_BLOG_VERSION',     '1.1.0' );
 define( 'AI_BLOG_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'AI_BLOG_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'AI_BLOG_PLUGIN_FILE', __FILE__ );
@@ -27,6 +27,7 @@ define( 'AI_BLOG_PLUGIN_FILE', __FILE__ );
 require_once AI_BLOG_PLUGIN_DIR . 'includes/ai-handler.php';
 require_once AI_BLOG_PLUGIN_DIR . 'includes/cron.php';
 require_once AI_BLOG_PLUGIN_DIR . 'includes/api-routes.php';
+require_once AI_BLOG_PLUGIN_DIR . 'includes/settings-page.php';
 
 // ── Activation ───────────────────────────────────────────────────────────────
 

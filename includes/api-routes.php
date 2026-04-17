@@ -44,6 +44,52 @@ function ai_blog_register_routes(): void {
     );
 }
 
+// ── Taxonomies Route ──────────────────────────────────────────────────────────
+
+add_action( 'rest_api_init', 'ai_blog_register_taxonomies_route' );
+
+function ai_blog_register_taxonomies_route(): void {
+    register_rest_route(
+        'ai-blog/v1',
+        '/taxonomies',
+        [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => 'ai_blog_get_taxonomies',
+            'permission_callback' => 'ai_blog_check_permission',
+        ]
+    );
+}
+
+/**
+ * GET /wp-json/ai-blog/v1/taxonomies
+ *
+ * Returns all categories and tags for the publish form dropdowns.
+ *
+ * @return WP_REST_Response
+ */
+function ai_blog_get_taxonomies(): WP_REST_Response {
+    $raw_cats = get_categories( [ 'hide_empty' => false, 'orderby' => 'name', 'order' => 'ASC' ] );
+    $categories = array_map(
+        fn( $cat ) => [
+            'id'     => (int) $cat->term_id,
+            'name'   => $cat->name,
+            'parent' => (int) $cat->parent,
+        ],
+        $raw_cats
+    );
+
+    $raw_tags = get_tags( [ 'hide_empty' => false, 'orderby' => 'name', 'order' => 'ASC' ] );
+    $tags = array_map(
+        fn( $tag ) => [
+            'id'   => (int) $tag->term_id,
+            'name' => $tag->name,
+        ],
+        $raw_tags ?: []
+    );
+
+    return new WP_REST_Response( compact( 'categories', 'tags' ), 200 );
+}
+
 // ── Publish Route ─────────────────────────────────────────────────────────────
 
 add_action( 'rest_api_init', 'ai_blog_register_publish_route' );
@@ -62,21 +108,46 @@ function ai_blog_register_publish_route(): void {
                     'type'              => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
                     'validate_callback' => fn( $v ) => is_string( $v ) && trim( $v ) !== '',
-                    'description'       => 'The post title.',
                 ],
                 'content' => [
                     'required'          => true,
                     'type'              => 'string',
                     'sanitize_callback' => 'wp_kses_post',
                     'validate_callback' => fn( $v ) => is_string( $v ) && trim( $v ) !== '',
-                    'description'       => 'The post body HTML (Gemini output).',
                 ],
                 'status' => [
                     'required'          => true,
                     'type'              => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
                     'validate_callback' => fn( $v ) => in_array( $v, [ 'draft', 'publish' ], true ),
-                    'description'       => 'Post status: draft or publish.',
+                ],
+                'categories' => [
+                    'required'    => false,
+                    'type'        => 'array',
+                    'default'     => [],
+                    'items'       => [ 'type' => 'integer' ],
+                    'description' => 'Array of category IDs to assign.',
+                ],
+                'tags' => [
+                    'required'          => false,
+                    'type'              => 'string',
+                    'default'           => '',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'description'       => 'Comma-separated tag names. New tags are created automatically.',
+                ],
+                'tone' => [
+                    'required'          => false,
+                    'type'              => 'string',
+                    'default'           => '',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'validate_callback' => fn( $v ) => $v === '' || in_array( $v, [ 'professional', 'casual', 'beginner' ], true ),
+                ],
+                'length' => [
+                    'required'          => false,
+                    'type'              => 'string',
+                    'default'           => '',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'validate_callback' => fn( $v ) => $v === '' || in_array( $v, [ 'short', 'medium', 'long' ], true ),
                 ],
             ],
         ]
@@ -90,19 +161,24 @@ function ai_blog_register_publish_route(): void {
  * @return WP_REST_Response|WP_Error
  */
 function ai_blog_handle_publish( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-    $title   = $request->get_param( 'title' );
-    $content = $request->get_param( 'content' );
-    $status  = $request->get_param( 'status' );
+    $title      = $request->get_param( 'title' );
+    $content    = $request->get_param( 'content' );
+    $status     = $request->get_param( 'status' );
+    $categories = array_filter( array_map( 'intval', (array) $request->get_param( 'categories' ) ) );
+    $tags_raw   = trim( (string) $request->get_param( 'tags' ) );
+    $tone       = $request->get_param( 'tone' );
+    $length     = $request->get_param( 'length' );
 
     $post_id = wp_insert_post(
         [
-            'post_title'   => $title,
-            'post_content' => $content,
-            'post_status'  => $status,
-            'post_type'    => 'post',
-            'post_author'  => get_current_user_id(),
+            'post_title'    => $title,
+            'post_content'  => $content,
+            'post_status'   => $status,
+            'post_type'     => 'post',
+            'post_author'   => get_current_user_id(),
+            'post_category' => $categories ?: [ get_option( 'default_category' ) ],
         ],
-        true // Return WP_Error on failure instead of 0.
+        true
     );
 
     if ( is_wp_error( $post_id ) ) {
@@ -112,6 +188,16 @@ function ai_blog_handle_publish( WP_REST_Request $request ): WP_REST_Response|WP
             [ 'status' => 500 ]
         );
     }
+
+    if ( '' !== $tags_raw ) {
+        $tag_names = array_filter( array_map( 'trim', explode( ',', $tags_raw ) ) );
+        wp_set_post_tags( $post_id, $tag_names, false );
+    }
+
+    // Tag this post so the history endpoint can identify AI-generated content.
+    update_post_meta( $post_id, '_ai_blog_generated', '1' );
+    if ( '' !== $tone )   update_post_meta( $post_id, '_ai_blog_tone',   $tone );
+    if ( '' !== $length ) update_post_meta( $post_id, '_ai_blog_length', $length );
 
     return new WP_REST_Response(
         [
@@ -265,4 +351,88 @@ function ai_blog_settings_payload(): array {
         'length'   => (string) get_option( 'ai_blog_auto_length', 'medium' ),
         'next_run' => ai_blog_next_run_label(),
     ];
+}
+
+// ── History Route ─────────────────────────────────────────────────────────────
+
+add_action( 'rest_api_init', 'ai_blog_register_history_route' );
+
+function ai_blog_register_history_route(): void {
+    register_rest_route(
+        'ai-blog/v1',
+        '/history',
+        [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => 'ai_blog_get_history',
+            'permission_callback' => 'ai_blog_check_permission',
+            'args'                => [
+                'page' => [
+                    'required'          => false,
+                    'type'              => 'integer',
+                    'default'           => 1,
+                    'minimum'           => 1,
+                    'sanitize_callback' => 'absint',
+                ],
+                'per_page' => [
+                    'required'          => false,
+                    'type'              => 'integer',
+                    'default'           => 10,
+                    'minimum'           => 1,
+                    'maximum'           => 50,
+                    'sanitize_callback' => 'absint',
+                ],
+            ],
+        ]
+    );
+}
+
+/**
+ * GET /wp-json/ai-blog/v1/history
+ *
+ * Returns a paginated list of AI-generated posts.
+ *
+ * @param WP_REST_Request $request
+ * @return WP_REST_Response
+ */
+function ai_blog_get_history( WP_REST_Request $request ): WP_REST_Response {
+    $page     = (int) $request->get_param( 'page' );
+    $per_page = (int) $request->get_param( 'per_page' );
+
+    $query = new WP_Query( [
+        'post_type'      => 'post',
+        'post_status'    => [ 'publish', 'draft' ],
+        'posts_per_page' => $per_page,
+        'paged'          => $page,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'meta_query'     => [
+            [
+                'key'   => '_ai_blog_generated',
+                'value' => '1',
+            ],
+        ],
+    ] );
+
+    $posts = array_map( function( WP_Post $post ) {
+        return [
+            'id'         => $post->ID,
+            'title'      => $post->post_title,
+            'date'       => get_the_date( 'Y-m-d', $post ),
+            'status'     => $post->post_status,
+            'edit_url'   => get_edit_post_link( $post->ID, 'raw' ),
+            'view_url'   => get_permalink( $post->ID ),
+            'tone'       => (string) get_post_meta( $post->ID, '_ai_blog_tone',   true ),
+            'length'     => (string) get_post_meta( $post->ID, '_ai_blog_length', true ),
+            'word_count' => str_word_count( wp_strip_all_tags( $post->post_content ) ),
+        ];
+    }, $query->posts );
+
+    return new WP_REST_Response(
+        [
+            'posts' => $posts,
+            'total' => (int) $query->found_posts,
+            'pages' => (int) $query->max_num_pages,
+        ],
+        200
+    );
 }

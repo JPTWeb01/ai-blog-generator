@@ -53,6 +53,10 @@ function ai_blog_run_auto_post(): void {
         return;
     }
 
+    update_post_meta( $post_id, '_ai_blog_generated', '1' );
+    update_post_meta( $post_id, '_ai_blog_tone',      $tone );
+    update_post_meta( $post_id, '_ai_blog_length',    $length );
+
     error_log( sprintf( '[AI Blog Generator] Auto-post published (ID %d): %s', $post_id, $topic ) );
 }
 
