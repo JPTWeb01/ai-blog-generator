@@ -21,6 +21,8 @@ define( 'AI_BLOG_VERSION',     '1.1.0' );
 define( 'AI_BLOG_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'AI_BLOG_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'AI_BLOG_PLUGIN_FILE', __FILE__ );
+define( 'AI_BLOG_GROQ_MODEL',    'llama-3.3-70b-versatile' );
+define( 'AI_BLOG_GROQ_ENDPOINT', 'https://api.groq.com/openai/v1/chat/completions' );
 
 // ── Includes ─────────────────────────────────────────────────────────────────
 

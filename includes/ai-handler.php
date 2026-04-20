@@ -1,17 +1,12 @@
 <?php
 /**
- * AI Handler — Google Gemini API integration.
+ * AI Handler — Groq API integration.
  *
- * Requires GEMINI_API_KEY to be defined in wp-config.php:
- *   define( 'GEMINI_API_KEY', 'your-key-here' );
+ * Requires GROQ_API_KEY to be defined in wp-config.php:
+ *   define( 'GROQ_API_KEY', 'your-key-here' );
  */
 
 defined( 'ABSPATH' ) || exit;
-
-// ── Constants ─────────────────────────────────────────────────────────────────
-
-define( 'AI_BLOG_GEMINI_MODEL', 'gemini-2.0-flash-lite' );
-define( 'AI_BLOG_GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/' . AI_BLOG_GEMINI_MODEL . ':generateContent' );
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -30,7 +25,7 @@ function ai_blog_generate_content( string $topic, string $tone, string $length )
     }
 
     $prompt   = ai_blog_build_prompt( $topic, $tone, $length );
-    $response = ai_blog_call_gemini( $api_key, $prompt );
+    $response = ai_blog_call_groq( $api_key, $prompt );
     if ( is_wp_error( $response ) ) {
         return $response;
     }
@@ -41,29 +36,25 @@ function ai_blog_generate_content( string $topic, string $tone, string $length )
 // ── Internal Helpers ──────────────────────────────────────────────────────────
 
 /**
- * Retrieve the API key — constant in wp-config.php takes priority over the DB.
+ * Retrieve the Groq API key from wp-config.php constant only.
+ * The key is never stored in the database or exposed to the frontend.
  *
  * @return string|WP_Error
  */
 function ai_blog_get_api_key(): string|WP_Error {
-    if ( defined( 'GEMINI_API_KEY' ) && '' !== trim( GEMINI_API_KEY ) ) {
-        return GEMINI_API_KEY;
-    }
-
-    $db_key = (string) get_option( 'ai_blog_gemini_api_key', '' );
-    if ( '' !== $db_key ) {
-        return $db_key;
+    if ( defined( 'GROQ_API_KEY' ) && '' !== trim( GROQ_API_KEY ) ) {
+        return GROQ_API_KEY;
     }
 
     return new WP_Error(
         'ai_blog_no_api_key',
-        __( 'Gemini API key is not configured. Add it in AI Blog → Settings or define GEMINI_API_KEY in wp-config.php.', 'ai-blog-generator' ),
+        __( 'Groq API key is not configured. Add define( \'GROQ_API_KEY\', \'your-key\' ) to wp-config.php.', 'ai-blog-generator' ),
         [ 'status' => 500 ]
     );
 }
 
 /**
- * Build the Gemini prompt from the user's inputs.
+ * Build the user prompt from the post inputs.
  *
  * @param string $topic
  * @param string $tone
@@ -90,43 +81,49 @@ function ai_blog_build_prompt( string $topic, string $tone, string $length ): st
          . "Tone: {$tone_instruction}\n\n"
          . "Length: Aim for approximately {$word_target} words.\n\n"
          . "Format the output as valid HTML using the following structure:\n"
-         . "- An <h2> tag for the main title\n"
-         . "- <h3> tags for section headings\n"
-         . "- <p> tags for paragraphs\n"
+         . "- An <h1> tag for the main blog title\n"
+         . "- An introduction <p> paragraph immediately after the title\n"
+         . "- 3 to 5 sections, each with an <h2> heading followed by one or more <p> paragraphs\n"
+         . "- A conclusion <p> paragraph at the end\n"
          . "- <ul> or <ol> with <li> tags for any lists\n"
          . "- <strong> or <em> for emphasis where appropriate\n\n"
          . "Return ONLY the HTML content — no markdown, no code fences, no explanations outside the HTML.";
 }
 
 /**
- * Call the Gemini REST API and return the generated text.
+ * Call the Groq REST API and return the generated HTML.
  *
  * Uses wp_remote_post() so WordPress proxy/SSL settings are respected.
+ * The API key is passed via Authorization header, never in the URL.
  *
  * @param string $api_key
  * @param string $prompt
  * @return string|WP_Error
  */
-function ai_blog_call_gemini( string $api_key, string $prompt ): string|WP_Error {
-    $url  = add_query_arg( 'key', $api_key, AI_BLOG_GEMINI_ENDPOINT );
+function ai_blog_call_groq( string $api_key, string $prompt ): string|WP_Error {
     $body = wp_json_encode( [
-        'contents' => [
+        'model'       => AI_BLOG_GROQ_MODEL,
+        'messages'    => [
             [
-                'parts' => [
-                    [ 'text' => $prompt ],
-                ],
+                'role'    => 'system',
+                'content' => 'You are a professional blog writer. Always respond with clean HTML formatted for WordPress.',
+            ],
+            [
+                'role'    => 'user',
+                'content' => $prompt,
             ],
         ],
-        'generationConfig' => [
-            'temperature'     => 0.7,
-            'maxOutputTokens' => 2048,
-        ],
+        'max_tokens'  => 2048,
+        'temperature' => 0.7,
     ] );
 
     $response = wp_remote_post(
-        $url,
+        AI_BLOG_GROQ_ENDPOINT,
         [
-            'headers' => [ 'Content-Type' => 'application/json' ],
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $api_key,
+            ],
             'body'    => $body,
             'timeout' => 30,
         ]
@@ -138,7 +135,7 @@ function ai_blog_call_gemini( string $api_key, string $prompt ): string|WP_Error
             'ai_blog_request_failed',
             sprintf(
                 /* translators: %s: underlying error message */
-                __( 'Could not reach the Gemini API: %s', 'ai-blog-generator' ),
+                __( 'Could not reach the Groq API: %s', 'ai-blog-generator' ),
                 $response->get_error_message()
             ),
             [ 'status' => 502 ]
@@ -149,7 +146,7 @@ function ai_blog_call_gemini( string $api_key, string $prompt ): string|WP_Error
     $raw_body  = wp_remote_retrieve_body( $response );
     $data      = json_decode( $raw_body, true );
 
-    // Non-200 response from Gemini.
+    // Non-200 response from Groq.
     if ( 200 !== (int) $http_code ) {
         $api_message = $data['error']['message'] ?? $raw_body;
 
@@ -157,7 +154,7 @@ function ai_blog_call_gemini( string $api_key, string $prompt ): string|WP_Error
             'ai_blog_api_error',
             sprintf(
                 /* translators: 1: HTTP status code, 2: API error message */
-                __( 'Gemini API returned HTTP %1$d: %2$s', 'ai-blog-generator' ),
+                __( 'Groq API returned HTTP %1$d: %2$s', 'ai-blog-generator' ),
                 (int) $http_code,
                 sanitize_text_field( $api_message )
             ),
@@ -165,18 +162,18 @@ function ai_blog_call_gemini( string $api_key, string $prompt ): string|WP_Error
         );
     }
 
-    // Extract generated text from the response structure.
-    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    // Extract generated text from choices[0].message.content.
+    $text = $data['choices'][0]['message']['content'] ?? '';
 
     if ( '' === trim( $text ) ) {
         return new WP_Error(
             'ai_blog_empty_response',
-            __( 'Gemini returned an empty response. Please try again.', 'ai-blog-generator' ),
+            __( 'Groq returned an empty response. Please try again.', 'ai-blog-generator' ),
             [ 'status' => 502 ]
         );
     }
 
-    // Strip any accidental markdown code fences Gemini may have added.
+    // Strip any accidental markdown code fences the model may have added.
     $text = preg_replace( '/^```(?:html)?\s*/i', '', trim( $text ) );
     $text = preg_replace( '/\s*```$/i', '', $text );
 
