@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-define( 'AI_BLOG_GEMINI_MODEL',    'gemini-2.0-flash' );
+define( 'AI_BLOG_GEMINI_MODEL',    'gemini-1.5-flash' );
 define( 'AI_BLOG_GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/' . AI_BLOG_GEMINI_MODEL . ':generateContent' );
 
 // ── Public API ────────────────────────────────────────────────────────────────
