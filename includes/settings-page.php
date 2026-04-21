@@ -54,19 +54,6 @@ function ai_blog_api_key_payload(): array {
 
 // ── Admin Settings Page ───────────────────────────────────────────────────────
 
-add_action( 'admin_menu', 'ai_blog_register_settings_submenu' );
-
-function ai_blog_register_settings_submenu(): void {
-    add_submenu_page(
-        'ai-blog-generator',
-        __( 'AI Blog — Settings', 'ai-blog-generator' ),
-        __( 'Settings', 'ai-blog-generator' ),
-        'manage_options',
-        'ai-blog-settings',
-        'ai_blog_render_settings_page'
-    );
-}
-
 function ai_blog_render_settings_page(): void {
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_die( esc_html__( 'You do not have permission to access this page.', 'ai-blog-generator' ) );

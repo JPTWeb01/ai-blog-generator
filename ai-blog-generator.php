@@ -81,6 +81,15 @@ function ai_blog_register_menu(): void {
         'dashicons-welcome-write-blog',                  // Icon
         30                                               // Position
     );
+
+    add_submenu_page(
+        'ai-blog-generator',
+        __( 'AI Blog — Settings', 'ai-blog-generator' ),
+        __( 'Settings', 'ai-blog-generator' ),
+        'manage_options',
+        'ai-blog-settings',
+        'ai_blog_render_settings_page'
+    );
 }
 
 // ── Admin Page Callback ───────────────────────────────────────────────────────
