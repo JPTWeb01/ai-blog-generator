@@ -6,8 +6,8 @@
  * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
- * Author:            Your Name
- * Author URI:        https://yourwebsite.com
+ * Author:            Jose Paulo Timbang
+ * Author URI:        https://josepaulotimbang.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       ai-blog-generator
