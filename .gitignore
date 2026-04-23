@@ -4,8 +4,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# ── Build output — committed so Hostinger (no Node.js) can serve the assets ──
-# node_modules is still excluded; run `npm run build` locally before pushing.
+# ── Build output ──────────────────────────────────────────────────────────────
 !build/
 
 # ── OS ────────────────────────────────────────────────────────────────────────
@@ -28,5 +27,7 @@ wp-config.php
 
 # ── WordPress ─────────────────────────────────────────────────────────────────
 *.log
-# Claude Code settings
-.claude/".claude/" 
+
+# ── Claude Code ───────────────────────────────────────────────────────────────
+.claude/
+.claude_backup/
