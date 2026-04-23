@@ -31,3 +31,4 @@ wp-config.php
 # Claude Code settings
 .claude/".claude/" 
 ".claude/" 
+".claude/" 
