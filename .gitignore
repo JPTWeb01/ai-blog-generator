@@ -30,3 +30,4 @@ wp-config.php
 *.log
 # Claude Code settings
 .claude/".claude/" 
+".claude/" 
